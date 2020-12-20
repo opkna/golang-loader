@@ -1,0 +1,60 @@
+{
+    "name": "golang-loader",
+    "version": "0.0.1",
+    "description": "Compiles .go files to WebAssembly",
+    "main": "lib/index.js",
+    "author": {
+        "name": "Oscar Persson",
+        "email": "oscar.persson1993@gmail.com",
+        "url": "https://github.com/opkna"
+    },
+    "license": "MIT",
+    "private": false,
+    "repository": {
+        "url": "https://github.com/opkna/golang-loader"
+    },
+    "homepage": "https://github.com/opkna/golang-loader",
+    "bugs": "https://github.com/opkna/golang-loader/issues",
+    "scripts": {
+        "build": "rimraf lib && babel src --out-dir lib --extensions '.ts'",
+        "release": "yarn build && release-it"
+    },
+    "dependencies": {
+        "rimraf": "^3.0.2"
+    },
+    "devDependencies": {
+        "@babel/cli": "^7.12.8",
+        "@babel/core": "^7.12.9",
+        "@babel/plugin-proposal-class-properties": "^7.12.1",
+        "@babel/plugin-transform-modules-commonjs": "^7.12.1",
+        "@babel/preset-typescript": "^7.12.7",
+        "@types/node": "^14.14.10",
+        "@types/rimraf": "^3.0.0",
+        "@types/webpack": "^4.41.25",
+        "release-it": "^14.2.2",
+        "typescript": "^4.1.2"
+    },
+    "prettier": {
+        "tabWidth": 4,
+        "singleQuote": true
+    },
+    "babel": {
+        "plugins": [
+            "@babel/plugin-proposal-class-properties",
+            "@babel/plugin-transform-modules-commonjs"
+        ],
+        "presets": [
+            "@babel/preset-typescript"
+        ],
+        "comments": false
+    },
+    "publishConfig": {
+        "registry": "https://registry.npmjs.org"
+    },
+    "release-it": {
+        "git": {
+            "requireBranch": "master",
+            "push": true
+        }
+    }
+}
