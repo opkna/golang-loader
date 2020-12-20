@@ -4,7 +4,7 @@ import * as util from 'util';
 import * as fs from 'fs';
 import * as os from 'os';
 import * as crypto from 'crypto';
-import * as rimraf from 'rimraf';
+import rimraf from 'rimraf';
 import { loader } from 'webpack';
 
 let execAsync = util.promisify(child_process.exec);
