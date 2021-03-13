@@ -74,13 +74,13 @@ async function compileGo(goFilePath: string, clearCache: boolean) {
         const inputFile = path.basename(goFilePath);
 
         if (clearCache) {
-            // Removes cache if it exist, ignore error if does not exist
+            // Removes cache (if it exist) before compiling, ignore error if does not exist
             await new Promise((resolve) => {
                 rimraf(goCachePath, resolve);
             });
         }
 
-        // Get all go related env vars
+        // Get all Go related env vars
         const goEnvs = await getGoPaths();
 
         // Compile to wasm
@@ -111,7 +111,10 @@ async function compileGo(goFilePath: string, clearCache: boolean) {
 export default async function (this: loader.LoaderContext) {
     // Make loader async
     const callback = this.async();
-    if (!callback) throw new Error('Could not make loader async');
+    if (!callback)
+        throw new Error(
+            "Could not make loader async. 'golang-loader' requires a async loader."
+        );
 
     try {
         // Compile to wasm
