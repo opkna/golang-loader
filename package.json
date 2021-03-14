@@ -17,10 +17,13 @@
     "bugs": "https://github.com/opkna/golang-loader/issues",
     "scripts": {
         "build": "rimraf lib && babel src --out-dir lib --extensions '.ts'",
+        "watch": "rimraf lib && babel src --out-dir lib --extensions '.ts' --watch",
         "release": "yarn build && release-it"
     },
     "dependencies": {
-        "rimraf": "^3.0.2"
+        "loader-utils": "^2.0.0",
+        "rimraf": "^3.0.2",
+        "schema-utils": "^3.0.0"
     },
     "devDependencies": {
         "@babel/cli": "^7.12.8",
@@ -28,6 +31,7 @@
         "@babel/plugin-proposal-class-properties": "^7.12.1",
         "@babel/plugin-transform-modules-commonjs": "^7.12.1",
         "@babel/preset-typescript": "^7.12.7",
+        "@types/loader-utils": "^2.0.1",
         "@types/node": "^14.14.10",
         "@types/rimraf": "^3.0.0",
         "@types/webpack": "^4.41.25",
