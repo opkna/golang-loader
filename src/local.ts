@@ -1,45 +1,52 @@
-import * as child_process from 'child_process';
 import * as path from 'path';
 import * as util from 'util';
 import * as fs from 'fs';
 
-let execAsync = util.promisify(child_process.exec);
-let execFileAsync = util.promisify(child_process.execFile);
+import { GolangLoaderOptions } from './options';
+import { exec, execFile } from './commands';
+import logger from './logging';
+
 let readFileAsync = util.promisify(fs.readFile);
 
-function goBinPath(goRoot: string) {
-    return path.resolve(goRoot, 'bin', 'go');
+async function getGoEnv(compiler: string, envName: string) {
+    let env = process.env[envName];
+    if (env) return env;
+    try {
+        // Try to get GOROOT with 'go env' command
+        const { stdout } = await exec(`${compiler} env ${envName}`);
+        return stdout.trim();
+    } catch (err) {
+        // Unable to find go binary, panic!
+        throw Error(`Can't find ${envName}.`);
+    }
 }
 
 /**
  * Finds and returns GOROOT and GOPATH
  */
-async function getGoPaths() {
-    let GOROOT = process.env.GOROOT;
-    let GOPATH = process.env.GOPATH;
+async function getPaths(useTinygo: boolean) {
+    const [binName, envRootName] = useTinygo
+        ? ['tinygo', 'TINYGOROOT']
+        : ['go', 'GOROOT'];
 
-    if (!GOROOT) {
-        try {
-            // Try to get GOROOT with 'go env' command
-            const { stdout } = await execAsync('go env GOROOT');
-            GOROOT = stdout.trim();
-        } catch (err) {
-            // Unable to find go binary, panic!
-            throw Error(
-                `Can't find Go! (GOROOT is not set, and go binary is not in PATH)`
-            );
-        }
-    }
-    if (!GOPATH) {
-        // Get GOPATH with 'go env'
-        const bin = goBinPath(GOROOT);
-        const { stdout } = await execFileAsync(bin, ['env', 'GOPATH']);
-        GOPATH = stdout.trim();
+    const root = await getGoEnv(binName, envRootName);
+    const binPath = path.resolve(root, 'bin', binName);
+    const goPath = (await execFile(binPath, ['env', 'GOPATH'])).stdout.trim();
+
+    const roots = {
+        [envRootName]: root,
+    };
+    if (useTinygo) {
+        // Also add GOROOT if using tinygo
+        roots['GOROOT'] = await getGoEnv('tinygo', 'GOROOT');
     }
 
     return {
-        GOROOT,
-        GOPATH,
+        bin: binPath,
+        env: {
+            ...roots,
+            GOPATH: goPath,
+        },
     };
 }
 
@@ -49,30 +56,44 @@ async function getGoPaths() {
  * @param resourcePath Path to `.go` or `.mod` file.
  * @param clearCache If true, will clear cache before and after compilation
  */
-export async function compileGoLocal(resourcePath: string, tmpFolder: string) {
-    // Folder where GO source is located
+export async function compileGoLocal(
+    resourcePath: string,
+    tmpFolder: string,
+    opt: Required<GolangLoaderOptions>
+) {
+    // Folder where Go source is located
     const srcDir = path.dirname(resourcePath);
 
-    // Get filename of GO source
+    // File output from compilation
+    const outFilePath = path.resolve(tmpFolder, 'module.wasm');
+
+    // Get filename of Go source
     const inputFile = path.basename(resourcePath);
 
-    // Get all Go related env vars
-    const goEnvs = await getGoPaths();
+    // Get Golang or Tinygo paths
+    const goPaths = await getPaths(opt.tinygo);
+
+    // Set arguments and env
+    const env: Record<string, string> = { ...goPaths.env, GOCACHE: tmpFolder };
+    const args = ['build'];
+    if (opt.tinygo) {
+        args.push('-target', 'wasm');
+        env.HOME = process.env.HOME;
+        env.PATH = process.env.PATH,
+    } else {
+        env.GOOS = 'js';
+        env.GOARCH = 'wasm';
+    }
+    args.push('-o', outFilePath, inputFile);
 
     // Compile to wasm
-    const outFilePath = path.resolve(tmpFolder, 'module.wasm');
-    const bin = goBinPath(goEnvs.GOROOT);
-    const args = ['build', '-o', outFilePath, inputFile];
-    const opts: child_process.ExecFileOptions = {
+    const { stderr } = await execFile(goPaths.bin, args, {
         cwd: srcDir,
-        env: {
-            ...goEnvs,
-            GOCACHE: tmpFolder,
-            GOOS: 'js',
-            GOARCH: 'wasm',
-        },
-    };
-    await execFileAsync(bin, args, opts);
+        env,
+    });
+    if (stderr) {
+        logger.warning(stderr);
+    }
 
     // Read and return the compiled wasm binary
     return readFileAsync(outFilePath);

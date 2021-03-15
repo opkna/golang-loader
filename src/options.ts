@@ -1,30 +1,66 @@
 import { validate } from 'schema-utils';
 import { Schema } from 'schema-utils/declarations/validate';
 
+import conf from './configuration';
+
 export type GolangLoaderOptions = {
-    useDocker?: boolean;
     clearCache?: boolean;
+    tinygo?: boolean;
+    docker?: boolean;
+    image?: string | undefined;
+    imageTag?: string;
+    debug?: boolean;
+};
+const defaultOptions: Required<GolangLoaderOptions> = {
+    clearCache: conf.default.clearCache,
+    tinygo: conf.default.tinygo,
+    docker: conf.default.docker,
+    image: undefined,
+    imageTag: conf.default.imageTag,
+    debug: conf.default.debug,
 };
 const optionsSchema: Schema = {
     type: 'object',
     properties: {
-        useDocker: {
+        clearCache: {
             type: 'boolean',
         },
-        clearCache: {
+        tinygo: {
+            type: 'boolean',
+        },
+        docker: {
+            type: 'boolean',
+        },
+        image: {
+            type: 'string',
+        },
+        imageTag: {
+            type: 'string',
+        },
+        debug: {
             type: 'boolean',
         },
     },
     additionalProperties: false,
 };
-export function validateOptions(
-    options: unknown
-): asserts options is GolangLoaderOptions {
-    if (typeof options !== 'object')
-        throw new Error("'golang-loader:' Options is not a object");
 
+function assertOptions(
+    options: object
+): asserts options is GolangLoaderOptions {
     validate(optionsSchema, options, {
         baseDataPath: 'options',
         name: 'GolangLoaderOptions',
     });
+}
+
+export function validateOptions(options: unknown) {
+    if (typeof options !== 'object')
+        throw new Error("'golang-loader:' Options is not a object");
+
+    assertOptions(options);
+
+    return {
+        ...defaultOptions,
+        ...options,
+    } as Required<GolangLoaderOptions>;
 }
