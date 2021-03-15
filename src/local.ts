@@ -79,7 +79,7 @@ export async function compileGoLocal(
     if (opt.tinygo) {
         args.push('-target', 'wasm');
         env.HOME = process.env.HOME;
-        env.PATH = process.env.PATH,
+        env.PATH = process.env.PATH;
     } else {
         env.GOOS = 'js';
         env.GOARCH = 'wasm';
