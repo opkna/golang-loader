@@ -1,6 +1,6 @@
 {
     "name": "golang-loader",
-    "version": "0.1.0",
+    "version": "0.1.1",
     "description": "Compiles .go files to WebAssembly",
     "main": "lib/index.js",
     "author": {
