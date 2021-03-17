@@ -1,14 +1,14 @@
-import * as crypto from 'crypto';
-import * as path from 'path';
-import * as os from 'os';
-import rimraf from 'rimraf';
 import { getOptions } from 'loader-utils';
+import * as crypto from 'crypto';
 import { loader } from 'webpack';
+import * as path from 'path';
+import rimraf from 'rimraf';
+import * as os from 'os';
 
 import { GolangLoaderOptions, validateOptions } from './options';
-import { compileGoDocker } from './docker';
-import { compileGoLocal } from './local';
+import { GolangCompilerDocker } from './compilers/docker';
 import logger, { setDebug, setWarning } from './logging';
+import { GolangCompilerLocal } from './compilers/local';
 
 function createTmpFolder(hash: string) {
     return path.resolve(os.tmpdir(), `golang-loader-${hash}`);
@@ -35,11 +35,10 @@ async function compileGo(
         }
 
         logger.debug(`options.docker: ${options.docker}`);
-        if (options.docker) {
-            return compileGoDocker(resourcePath, tmpFolder, options);
-        } else {
-            return compileGoLocal(resourcePath, tmpFolder, options);
-        }
+        const compiler = options.docker
+            ? new GolangCompilerDocker(options)
+            : new GolangCompilerLocal(options);
+        return compiler.compile(resourcePath, hash, tmpFolder);
     } finally {
         if (options.clearCache) {
             // Remove compiled binary and GO cache directory. Ignore any error if the files are not there anyway

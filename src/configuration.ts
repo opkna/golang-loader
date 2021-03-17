@@ -1,5 +1,5 @@
 export default {
-    default: {
+    defaults: {
         clearCache: false,
         tinygo: false,
         docker: false,
@@ -7,5 +7,10 @@ export default {
         imageTinygo: 'tinygo/tinygo',
         imageTag: 'latest',
         debug: false,
+    },
+    docker: {
+        workdir: '/workdir',
+        tmpdir: '/golang-tmp',
+        containerPrefix: 'golang-loader-',
     },
 };

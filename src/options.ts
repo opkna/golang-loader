@@ -1,5 +1,5 @@
-import { validate } from 'schema-utils';
 import { Schema } from 'schema-utils/declarations/validate';
+import { validate } from 'schema-utils';
 
 import conf from './configuration';
 
@@ -12,12 +12,12 @@ export type GolangLoaderOptions = {
     debug?: boolean;
 };
 const defaultOptions: Required<GolangLoaderOptions> = {
-    clearCache: conf.default.clearCache,
-    tinygo: conf.default.tinygo,
-    docker: conf.default.docker,
+    clearCache: conf.defaults.clearCache,
+    tinygo: conf.defaults.tinygo,
+    docker: conf.defaults.docker,
     image: undefined,
-    imageTag: conf.default.imageTag,
-    debug: conf.default.debug,
+    imageTag: conf.defaults.imageTag,
+    debug: conf.defaults.debug,
 };
 const optionsSchema: Schema = {
     type: 'object',
