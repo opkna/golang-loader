@@ -14,7 +14,6 @@ type MountPaths = {
     resourceFolder: string;
     goPaths: string[];
 };
-type Paths = ;
 
 export class GolangCompilerDocker extends GolangCompiler {
     private _getFullImage() {
@@ -96,12 +95,20 @@ export class GolangCompilerDocker extends GolangCompiler {
 
         // Create mount for the resource folder and tmp folder
         const mounts = [
-            `${path.toNamespacedPath(paths.local.resourceFolder)}:${paths.cont.resourceFolder}`,
-            `${path.toNamespacedPath(paths.local.tmpFolder)}:${paths.cont.tmpFolder}`,
+            `${path.toNamespacedPath(paths.local.resourceFolder)}:${
+                paths.cont.resourceFolder
+            }`,
+            `${path.toNamespacedPath(paths.local.tmpFolder)}:${
+                paths.cont.tmpFolder
+            }`,
         ];
         // Create mounts linking all local paths in GOPATH to folder on container
-        for(let i = 0; i < paths.local.goPaths.length; ++i) {
-            mounts.push(`${path.toNamespacedPath(paths.local.goPaths[i])}:${paths.cont.goPaths[i]}`;)
+        for (let i = 0; i < paths.local.goPaths.length; ++i) {
+            mounts.push(
+                `${path.toNamespacedPath(paths.local.goPaths[i])}:${
+                    paths.cont.goPaths[i]
+                }`
+            );
         }
         logger.debug(`mounts: ${mounts.join('\n')}`);
 
